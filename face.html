@@ -75,11 +75,15 @@
             const userRef = db.collection("users");
             const snapshot = await userRef.get();
             let accountsHtml = "<h3>User Accounts:</h3>";
-            snapshot.forEach(doc => {
-                const data = doc.data();
-                const decryptedPassword = decryptPassword(data.password);
-                accountsHtml += `<p>Username: ${data.username}, Password: ${decryptedPassword}</p>`;
-            });
+            if (snapshot.empty) {
+                accountsHtml += "<p>No accounts found.</p>";
+            } else {
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const decryptedPassword = decryptPassword(data.password);
+                    accountsHtml += `<p>Username: ${data.username}, Password: ${decryptedPassword}</p>`;
+                });
+            }
             document.getElementById("account-info").innerHTML = accountsHtml;
         }
 
